@@ -1,5 +1,6 @@
-package ru.pronin.tradeBot.strategies.MACD;
+package ru.pronin.tradeBot;
 
+import ru.pronin.tradeBot.strategies.MACD.EMA;
 import ru.tinkoff.invest.openapi.*;
 import ru.tinkoff.invest.openapi.model.rest.Candle;
 import ru.tinkoff.invest.openapi.model.rest.CandleResolution;
