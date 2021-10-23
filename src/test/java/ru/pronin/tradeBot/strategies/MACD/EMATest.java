@@ -1,12 +1,13 @@
 package ru.pronin.tradeBot.strategies.MACD;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import ru.tinkoff.invest.openapi.model.rest.Candle;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.function.Function;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EMATest {
 
@@ -22,7 +23,7 @@ public class EMATest {
         ema.addCandle(createCandle.apply(BigDecimal.ONE));
         ema.addCandle(createCandle.apply(BigDecimal.TEN));
         ema.addCandle(createCandle.apply(BigDecimal.ONE));
-        Assert.assertEquals(BigDecimal.valueOf(4).setScale(1, RoundingMode.HALF_UP), ema.getCurrentValue());
+        assertEquals(BigDecimal.valueOf(4).setScale(1, RoundingMode.HALF_UP), ema.getCurrentValue());
     }
 
     @Test
@@ -33,7 +34,6 @@ public class EMATest {
         ema.addCandle(createCandle.apply(BigDecimal.valueOf(7.9)));
         ema.addCandle(createCandle.apply(BigDecimal.valueOf(7.1)));
         ema.addCandle(createCandle.apply(BigDecimal.valueOf(5.2)));
-
-        Assert.assertEquals(BigDecimal.valueOf(6.130), ema.getCurrentValue().setScale(2, RoundingMode.HALF_UP));
+        assertEquals(BigDecimal.valueOf(6.130), ema.getCurrentValue().setScale(2, RoundingMode.HALF_UP));
     }
 }

@@ -2,19 +2,28 @@ package ru.pronin.tradeBot.brokerAPI.tinkoff;
 
 import org.reactivestreams.Subscriber;
 import ru.pronin.tradeBot.brokerAPI.SubscriptionDAO;
-import ru.tinkoff.invest.openapi.model.rest.CandleResolution;
+import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
+import ru.pronin.tradeBot.brokerAPI.exceptions.StreamInitializationException;
+import ru.tinkoff.invest.openapi.StreamingContext;
 import ru.tinkoff.invest.openapi.model.streaming.CandleInterval;
 import ru.tinkoff.invest.openapi.model.streaming.StreamingEvent;
 import ru.tinkoff.invest.openapi.model.streaming.StreamingRequest;
 
 import java.util.function.Function;
-import static ru.pronin.tradeBot.brokerAPI.tinkoff.DAOTinkoffImpl.STREAM;
 
-public class SubscriptionDAOTinkoffImpl implements SubscriptionDAO<CandleResolution> {
+public class SubscriptionDAOTinkoffImpl implements SubscriptionDAO {
+
+    private Boolean isSubscribeSet;
+    private StreamingContext STREAM;
+
+    public void setSTREAM(StreamingContext STREAM) throws StreamInitializationException {
+        if (this.STREAM != null) throw new StreamInitializationException();
+        this.STREAM = STREAM;
+    }
 
     @Override
-    public void subscribeOnCandles(String figi, CandleResolution candleResolution) {
-        CandleInterval interval = CandleInterval.valueOf(candleResolution.getValue());
+    public void subscribeOnCandles(String figi, CustomCandleResolution customCandleResolution) {
+        CandleInterval interval = CandleInterval.valueOf(customCandleResolution.getValue());
         StreamingRequest candleRequest = StreamingRequest.subscribeCandle(figi, interval);
         STREAM.sendRequest(candleRequest);
     }
@@ -35,5 +44,6 @@ public class SubscriptionDAOTinkoffImpl implements SubscriptionDAO<CandleResolut
     public void setSubscriber(Function<StreamingEvent, Boolean> eventHandler) {
         Subscriber<StreamingEvent> subscriber = new TinkoffSubscriber(eventHandler);
         STREAM.subscribe(subscriber);
+        isSubscribeSet = true;
     }
 }

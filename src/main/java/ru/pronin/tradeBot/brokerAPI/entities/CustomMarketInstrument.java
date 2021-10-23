@@ -1,17 +1,19 @@
 package ru.pronin.tradeBot.brokerAPI.entities;
 
-public class MarketInstrument {
+import ru.pronin.tradeBot.brokerAPI.enums.CustomCurrency;
+
+public class CustomMarketInstrument {
     private String figi;
     private String ticker;
     private String isin;
-    private Currency currency;
+    private CustomCurrency customCurrency;
     private String name;
 
-    public MarketInstrument(String figi, String ticker, String isin, Currency currency, String name) {
+    public CustomMarketInstrument(String figi, String ticker, String isin, CustomCurrency customCurrency, String name) {
         this.figi = figi;
         this.ticker = ticker;
         this.isin = isin;
-        this.currency = currency;
+        this.customCurrency = customCurrency;
         this.name = name;
     }
 
@@ -39,12 +41,12 @@ public class MarketInstrument {
         this.isin = isin;
     }
 
-    public Currency getCurrency() {
-        return currency;
+    public CustomCurrency getCurrency() {
+        return customCurrency;
     }
 
-    public void setCurrency(Currency currency) {
-        this.currency = currency;
+    public void setCurrency(CustomCurrency customCurrency) {
+        this.customCurrency = customCurrency;
     }
 
     public String getName() {

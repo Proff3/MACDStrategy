@@ -1,6 +1,10 @@
 package ru.pronin.tradeBot.brokerAPI.tinkoff;
 
 import ru.pronin.tradeBot.brokerAPI.InstrumentsDataDAO;
+import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
+import ru.pronin.tradeBot.brokerAPI.entities.CustomMarketInstrument;
+import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
+import ru.pronin.tradeBot.brokerAPI.enums.CustomCurrency;
 import ru.pronin.tradeBot.brokerAPI.exceptions.CandlesNotFoundException;
 import ru.pronin.tradeBot.brokerAPI.exceptions.NoMarketInstrumentException;
 import ru.tinkoff.invest.openapi.MarketContext;
@@ -12,18 +16,26 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
-import static ru.pronin.tradeBot.brokerAPI.tinkoff.DAOTinkoffImpl.MARKET;
+public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
 
-public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO<MarketInstrument, Candle, CandleResolution> {
+    private MarketContext MARKET;
+    List<CustomMarketInstrument> instruments;
 
-    List<MarketInstrument> instruments;
+    public void setMARKET(MarketContext MARKET) {
+        this.MARKET = MARKET;
+    }
 
     @Override
-    public List<MarketInstrument> getAllInstruments() {
+    public List<CustomMarketInstrument> getAllInstruments() {
         if (instruments == null) {
             try {
-                instruments = MARKET.getMarketStocks().get().getInstruments();
+                List<ru.tinkoff.invest.openapi.model.rest.MarketInstrument> tinkoffInstruments = MARKET.getMarketStocks().get().getInstruments();
+                instruments = tinkoffInstruments
+                        .stream()
+                        .map(InstrumentsDataDAOTinkoffImpl::tinkoffInstrumentToCustom)
+                        .collect(Collectors.toList());
                 return instruments;
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
@@ -33,16 +45,17 @@ public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO<MarketI
     }
 
     @Override
-    public List<Candle> getCandlesForWeeks(String figi, int numberOfWeeks, CandleResolution candleResolution) throws Exception {
+    public List<CustomCandle> getCandlesForWeeks(String figi, int numberOfWeeks, CustomCandleResolution customCandleResolution) throws Exception {
         OffsetDateTime dateFrom = OffsetDateTime.now().minusWeeks(numberOfWeeks);
-        return getCandlesForTime(dateFrom, figi, candleResolution);
+        return getCandlesForTime(dateFrom, figi, customCandleResolution);
     }
 
-    private List<Candle> getCandlesForTime(OffsetDateTime dateFrom, String figi, CandleResolution resolution) throws Exception {
-        List<Candle> resultCandles = new ArrayList<>();
+    private List<CustomCandle> getCandlesForTime(OffsetDateTime dateFrom, String figi, CustomCandleResolution resolution) throws Exception {
+        CandleResolution candleResolution = CandleResolution.fromValue(resolution.getValue());
+        List<CustomCandle> resultCustomCandles = new ArrayList<>();
         while(dateFrom.isBefore(OffsetDateTime.now().minusDays(1))){
-            List<Candle> middlewareCandles = MARKET
-                    .getMarketCandles(figi, dateFrom, dateFrom.plusWeeks(1), resolution)
+            List<CustomCandle> middlewareCustomCandles = MARKET
+                    .getMarketCandles(figi, dateFrom, dateFrom.plusWeeks(1), candleResolution)
                     .get()
                     .orElseThrow(() -> {
                         try {
@@ -56,10 +69,38 @@ public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO<MarketI
                             return new NoMarketInstrumentException();
                         }
                     })
-                    .getCandles();
+                    .getCandles()
+                    .stream()
+                    .map(InstrumentsDataDAOTinkoffImpl::tinkoffCandleToCustom)
+                    .collect(Collectors.toList());
             dateFrom = dateFrom.plusWeeks(1);
-            resultCandles.addAll(middlewareCandles);
+            resultCustomCandles.addAll(middlewareCustomCandles);
         }
-        return resultCandles;
+        return resultCustomCandles;
+    }
+
+    private static CustomMarketInstrument tinkoffInstrumentToCustom(MarketInstrument tinkoffInstrument){
+        CustomCurrency customCurrency = CustomCurrency.valueOf(tinkoffInstrument.getCurrency().toString());
+        return new CustomMarketInstrument(
+                tinkoffInstrument.getFigi(),
+                tinkoffInstrument.getTicker(),
+                tinkoffInstrument.getIsin(),
+                customCurrency,
+                tinkoffInstrument.getName()
+        );
+    }
+
+    private static CustomCandle tinkoffCandleToCustom(Candle candle){
+        CustomCandleResolution resolution = CustomCandleResolution.fromValue(candle.getInterval().getValue());
+        return new CustomCandle(
+                candle.getFigi(),
+                resolution,
+                candle.getO(),
+                candle.getC(),
+                candle.getH(),
+                candle.getL(),
+                candle.getV(),
+                candle.getTime()
+        );
     }
 }

@@ -1,35 +1,31 @@
-package ru.pronin.tradeBot.brokerAPI.entities;
+package ru.pronin.tradeBot.brokerAPI.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum Currency {
-    RUB("RUB"),
-    USD("USD"),
-    EUR("EUR"),
-    GBP("GBP"),
-    HKD("HKD"),
-    CHF("CHF"),
-    JPY("JPY"),
-    CNY("CNY"),
-    TRY("TRY");
+public enum CustomOrderType {
+    LIMIT("Limit"),
+    MARKET("Market");
 
-    private String value;
+    private final String value;
 
-    Currency(String value) {
+    CustomOrderType(String value) {
         this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
         return value;
     }
-    
+
+    @Override
     public String toString() {
         return String.valueOf(value);
     }
-    
-    public static Enum<Currency> fromValue(String text) {
-        for (Currency b : Currency.values()) {
+
+    @JsonCreator
+    public static CustomOrderType fromValue(String text) {
+        for (CustomOrderType b : CustomOrderType.values()) {
             if (String.valueOf(b.value).equals(text)) {
                 return b;
             }

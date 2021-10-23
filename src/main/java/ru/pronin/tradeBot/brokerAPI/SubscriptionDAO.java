@@ -1,11 +1,12 @@
 package ru.pronin.tradeBot.brokerAPI;
 
+import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
 import ru.tinkoff.invest.openapi.model.streaming.StreamingEvent;
 
 import java.util.function.Function;
 
-public interface SubscriptionDAO<TCandleResolution> {
-    void subscribeOnCandles(String figi, TCandleResolution candleResolution);
+public interface SubscriptionDAO {
+    void subscribeOnCandles(String figi, CustomCandleResolution customCandleResolution);
     void subscribeOnInstrumentInfo(String figi);
     void subscribeOnOrderBook(String figi, int depth);
     /**

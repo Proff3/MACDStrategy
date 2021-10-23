@@ -1,12 +1,14 @@
 package ru.pronin.tradeBot.brokerAPI.entities;
 
+import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
-public class Candle {
+public class CustomCandle {
 
     private String figi = null;
-    private CandleResolution interval = null;
+    private CustomCandleResolution interval = null;
     private BigDecimal o = null;
     private BigDecimal c = null;
     private BigDecimal h = null;
@@ -14,7 +16,7 @@ public class Candle {
     private Integer v = null;
     private OffsetDateTime time = null;
 
-    public Candle(String figi, CandleResolution interval, BigDecimal o, BigDecimal c, BigDecimal h, BigDecimal l, Integer v, OffsetDateTime time) {
+    public CustomCandle(String figi, CustomCandleResolution interval, BigDecimal o, BigDecimal c, BigDecimal h, BigDecimal l, Integer v, OffsetDateTime time) {
         this.figi = figi;
         this.interval = interval;
         this.o = o;
@@ -33,11 +35,11 @@ public class Candle {
         this.figi = figi;
     }
 
-    public CandleResolution getInterval() {
+    public CustomCandleResolution getInterval() {
         return interval;
     }
 
-    public void setInterval(CandleResolution interval) {
+    public void setInterval(CustomCandleResolution interval) {
         this.interval = interval;
     }
 
