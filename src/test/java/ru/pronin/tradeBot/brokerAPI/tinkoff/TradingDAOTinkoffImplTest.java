@@ -24,13 +24,18 @@ import ru.tinkoff.invest.openapi.model.streaming.StreamingEvent;
 import ru.tinkoff.invest.openapi.model.streaming.StreamingRequest;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -176,10 +181,17 @@ class TradingDAOTinkoffImplTest {
     }
 
     @Test
-    void cancelOrder() throws NoSuchFieldException {
-        tinkoff.getTradingDAO().cancelOrder(null);
-        verify(tinkoff, times(1)).getTradingDAO().getClass().getDeclaredField("ORDERS").get();
-        //дописать рефлексию, написать тест лоя портфолиоДАО
+    void cancelOrder() throws ExecutionException, InterruptedException {
+        String orderID = tinkoff.getTradingDAO().placeLimitOrder(
+                "BBG000B9XRY4",
+                1,
+                CustomOperationType.BUY,
+                BigDecimal.valueOf(144)
+        ).getOrderId();
+        //orders complete immediately cause it`s a sandbox mode
+        //therefore orders cannot be cancelled
+        tinkoff.getTradingDAO().cancelOrder(orderID);
+        assertDoesNotThrow(() -> tinkoff.getTradingDAO().cancelOrder(orderID));
     }
 
     private int getLotsForFigiFromPortfolio(BrokerDAO broker, String figi) throws ExecutionException, InterruptedException {

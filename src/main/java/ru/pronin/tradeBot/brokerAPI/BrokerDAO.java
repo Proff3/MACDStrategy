@@ -22,31 +22,15 @@ public abstract class BrokerDAO {
         return instrumentsDataDAO;
     }
 
-    public void setInstrumentsDataDAO(InstrumentsDataDAO instrumentsDataDAO) {
-        this.instrumentsDataDAO = instrumentsDataDAO;
-    }
-
     public SubscriptionDAO getSubscriptionDAO() {
         return subscriptionDAO;
-    }
-
-    public void setSubscriptionDAO(SubscriptionDAO subscriptionDAO) {
-        this.subscriptionDAO = subscriptionDAO;
     }
 
     public TradingDAO getTradingDAO() {
         return tradingDAO;
     }
 
-    public void setTradingDAO(TradingDAO tradingDAO) {
-        this.tradingDAO = tradingDAO;
-    }
-
     public PortfolioDAO getPortfolioDAO() {
         return portfolioDAO;
-    }
-
-    public void setPortfolioDAO(PortfolioDAO portfolioDAO) {
-        this.portfolioDAO = portfolioDAO;
     }
 }

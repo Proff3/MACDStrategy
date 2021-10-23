@@ -2,6 +2,7 @@ package ru.pronin.tradeBot.brokerAPI.tinkoff;
 
 import ru.pronin.tradeBot.brokerAPI.*;
 import ru.pronin.tradeBot.brokerAPI.exceptions.OrdersContextInitializationException;
+import ru.pronin.tradeBot.brokerAPI.exceptions.PortfolioInitializationException;
 import ru.pronin.tradeBot.brokerAPI.exceptions.StreamInitializationException;
 import ru.tinkoff.invest.openapi.*;
 import ru.tinkoff.invest.openapi.model.rest.*;
@@ -57,7 +58,11 @@ public class BrokerDAOTinkoffImpl extends BrokerDAO {
             subscriptionDAO.setSTREAM(STREAM);
             tradingDAO.setORDERS(ORDERS);
             portfolioDAO.setPORTFOLIO(PORTFOLIO);
-        } catch (StreamInitializationException | ExecutionException | InterruptedException | OrdersContextInitializationException e) {
+        } catch (StreamInitializationException |
+                ExecutionException |
+                InterruptedException |
+                OrdersContextInitializationException |
+                PortfolioInitializationException e) {
             e.printStackTrace();
         }
         tradingDAO.setBrokerAccountID(accountID);

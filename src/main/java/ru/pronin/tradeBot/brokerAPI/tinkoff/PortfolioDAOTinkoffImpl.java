@@ -6,11 +6,11 @@ import ru.pronin.tradeBot.brokerAPI.entities.CustomPortfolio;
 import ru.pronin.tradeBot.brokerAPI.entities.CustomPortfolioPosition;
 import ru.pronin.tradeBot.brokerAPI.enums.CustomCurrency;
 import ru.pronin.tradeBot.brokerAPI.enums.CustomInstrumentType;
+import ru.pronin.tradeBot.brokerAPI.exceptions.PortfolioInitializationException;
+import ru.pronin.tradeBot.brokerAPI.exceptions.StreamInitializationException;
 import ru.tinkoff.invest.openapi.PortfolioContext;
-import ru.tinkoff.invest.openapi.model.rest.Portfolio;
-import ru.tinkoff.invest.openapi.model.rest.PortfolioPosition;
+import ru.tinkoff.invest.openapi.model.rest.*;
 
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class PortfolioDAOTinkoffImpl implements PortfolioDAO {
@@ -19,7 +19,7 @@ public class PortfolioDAOTinkoffImpl implements PortfolioDAO {
     private PortfolioContext PORTFOLIO;
 
     @Override
-    public CustomPortfolio getPortfolio() throws ExecutionException, InterruptedException {
+    public CustomPortfolio getPortfolio() {
         Portfolio originPortfolio = PORTFOLIO.getPortfolio(brokerAccountID).join();
         return fromOriginPortfolioToCustom(originPortfolio);
     }
@@ -28,7 +28,8 @@ public class PortfolioDAOTinkoffImpl implements PortfolioDAO {
         this.brokerAccountID = brokerAccountID;
     }
 
-    public void setPORTFOLIO(PortfolioContext PORTFOLIO) {
+    public void setPORTFOLIO(PortfolioContext PORTFOLIO) throws PortfolioInitializationException {
+        if (this.PORTFOLIO != null) throw new PortfolioInitializationException();
         this.PORTFOLIO = PORTFOLIO;
     }
 
@@ -43,38 +44,69 @@ public class PortfolioDAOTinkoffImpl implements PortfolioDAO {
         return customPortfolio;
     }
 
-    private static CustomPortfolioPosition fromOriginPortfolioPositionToCustom(PortfolioPosition portfolioPosition){
-        CustomPortfolioPosition customPortfolioPosition = new CustomPortfolioPosition();
-        customPortfolioPosition.setName(portfolioPosition.getName());
-        customPortfolioPosition.setTicker(portfolioPosition.getTicker());
-        customPortfolioPosition.setFigi(portfolioPosition.getFigi());
-        customPortfolioPosition.setIsin(portfolioPosition.getIsin());
-        customPortfolioPosition.setLots(portfolioPosition.getLots());
-        customPortfolioPosition.setBalance(portfolioPosition.getBalance());
-        customPortfolioPosition.setBlocked(portfolioPosition.getBlocked());
-        customPortfolioPosition.setInstrumentType(CustomInstrumentType.fromValue(portfolioPosition.getInstrumentType().toString()));
-        if (portfolioPosition.getAveragePositionPrice() != null) {
+    private static PortfolioPosition fromCustomPortfolioPositionToOrigin(CustomPortfolioPosition customPosition){
+        PortfolioPosition position = new PortfolioPosition();
+        position.setName(customPosition.getName());
+        position.setTicker(customPosition.getTicker());
+        position.setFigi(customPosition.getFigi());
+        position.setIsin(customPosition.getIsin());
+        position.setLots(customPosition.getLots());
+        position.setBalance(customPosition.getBalance());
+        position.setBlocked(customPosition.getBlocked());
+        position.setInstrumentType(InstrumentType.fromValue(customPosition.getInstrumentType().toString()));
+        if (customPosition.getAveragePositionPrice() != null) {
+            MoneyAmount averagePositionPrice = new MoneyAmount();
+            averagePositionPrice.setCurrency(Currency.fromValue(customPosition.getAveragePositionPrice().getCurrency().getValue()));
+            averagePositionPrice.setValue(customPosition.getAveragePositionPrice().getValue());
+            position.setAveragePositionPrice(averagePositionPrice);
+        }
+        if (customPosition.getAveragePositionPriceNoNkd() != null){
+            MoneyAmount averagePositionPriceNoNkd = new MoneyAmount();
+            averagePositionPriceNoNkd.setCurrency(Currency.fromValue(customPosition.getAveragePositionPriceNoNkd().getCurrency().getValue()));
+            averagePositionPriceNoNkd.setValue(customPosition.getAveragePositionPriceNoNkd().getValue());
+            position.setAveragePositionPriceNoNkd(averagePositionPriceNoNkd);
+        }
+        if (customPosition.getExpectedYield() != null){
+            MoneyAmount expectedYield = new MoneyAmount();
+            expectedYield.setCurrency(Currency.fromValue(customPosition.getExpectedYield().getCurrency().getValue()));
+            expectedYield.setValue(customPosition.getExpectedYield().getValue());
+            position.setExpectedYield(expectedYield);
+        }
+        return position;
+    }
+
+    private static CustomPortfolioPosition fromOriginPortfolioPositionToCustom(PortfolioPosition originPosition){
+        CustomPortfolioPosition position = new CustomPortfolioPosition();
+        position.setName(originPosition.getName());
+        position.setTicker(originPosition.getTicker());
+        position.setFigi(originPosition.getFigi());
+        position.setIsin(originPosition.getIsin());
+        position.setLots(originPosition.getLots());
+        position.setBalance(originPosition.getBalance());
+        position.setBlocked(originPosition.getBlocked());
+        position.setInstrumentType(CustomInstrumentType.fromValue(originPosition.getInstrumentType().toString()));
+        if (originPosition.getAveragePositionPrice() != null) {
             CustomMoneyAmount averagePositionPrice = new CustomMoneyAmount(
-                    CustomCurrency.fromValue(portfolioPosition.getAveragePositionPrice().getCurrency().getValue()),
-                    portfolioPosition.getAveragePositionPrice().getValue()
+                    CustomCurrency.fromValue(originPosition.getAveragePositionPrice().getCurrency().getValue()),
+                    originPosition.getAveragePositionPrice().getValue()
             );
-            customPortfolioPosition.setAveragePositionPrice(averagePositionPrice);
+            position.setAveragePositionPrice(averagePositionPrice);
         }
-        if (portfolioPosition.getAveragePositionPriceNoNkd() != null){
+        if (originPosition.getAveragePositionPriceNoNkd() != null){
             CustomMoneyAmount averagePositionPriceNoNkd = new CustomMoneyAmount(
-                    CustomCurrency.fromValue(portfolioPosition.getAveragePositionPriceNoNkd().getCurrency().getValue()),
-                    portfolioPosition.getAveragePositionPriceNoNkd().getValue()
+                    CustomCurrency.fromValue(originPosition.getAveragePositionPriceNoNkd().getCurrency().getValue()),
+                    originPosition.getAveragePositionPriceNoNkd().getValue()
             );
-            customPortfolioPosition.setAveragePositionPriceNoNkd(averagePositionPriceNoNkd);
+            position.setAveragePositionPriceNoNkd(averagePositionPriceNoNkd);
         }
-        if (portfolioPosition.getExpectedYield() != null){
+        if (originPosition.getExpectedYield() != null){
             CustomMoneyAmount expectedYield = new CustomMoneyAmount(
-                    CustomCurrency.fromValue(portfolioPosition.getExpectedYield().getCurrency().getValue()),
-                    portfolioPosition.getExpectedYield().getValue()
+                    CustomCurrency.fromValue(originPosition.getExpectedYield().getCurrency().getValue()),
+                    originPosition.getExpectedYield().getValue()
             );
-            customPortfolioPosition.setExpectedYield(expectedYield);
+            position.setExpectedYield(expectedYield);
         }
-        return customPortfolioPosition;
+        return position;
     }
 
 }
