@@ -1,5 +1,7 @@
 package ru.pronin.tradeBot;
 
+import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
+import ru.pronin.tradeBot.brokerAPI.tinkoff.TinkoffConvertor;
 import ru.pronin.tradeBot.strategies.MACD.EMA;
 import ru.tinkoff.invest.openapi.*;
 import ru.tinkoff.invest.openapi.model.rest.Candle;
@@ -45,7 +47,9 @@ public class Main {
                         .orElse(null)
                         .getCandles();
         EMA ema = new EMA(5);
-        appleCandles.forEach(ema::addCandle);
+        appleCandles.stream()
+                .map(TinkoffConvertor::convertOriginCandleToCustom)
+                .forEach(ema::addCandle);
     }
 
     private static String getToken() {

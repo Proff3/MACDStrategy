@@ -27,6 +27,8 @@ public class CustomCandle {
         this.time = time;
     }
 
+    public CustomCandle(){}
+
     public String getFigi() {
         return figi;
     }

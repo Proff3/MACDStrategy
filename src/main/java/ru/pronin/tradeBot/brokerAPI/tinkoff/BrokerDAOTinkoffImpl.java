@@ -6,6 +6,7 @@ import ru.pronin.tradeBot.brokerAPI.exceptions.PortfolioInitializationException;
 import ru.pronin.tradeBot.brokerAPI.exceptions.StreamInitializationException;
 import ru.tinkoff.invest.openapi.*;
 import ru.tinkoff.invest.openapi.model.rest.*;
+import ru.tinkoff.invest.openapi.model.streaming.StreamingEvent;
 import ru.tinkoff.invest.openapi.okhttp.OkHttpOpenApi;
 
 import java.io.FileReader;
@@ -24,7 +25,7 @@ public class BrokerDAOTinkoffImpl extends BrokerDAO {
     private String accountID;
     private final InstrumentsDataDAO instrumentsDataDAO =
             new InstrumentsDataDAOTinkoffImpl();
-    private final SubscriptionDAO subscriptionDAO = new SubscriptionDAOTinkoffImpl();
+    private final SubscriptionDAO<StreamingEvent> subscriptionDAO = new SubscriptionDAOTinkoffImpl();
     private final TradingDAO tradingDAO = new TradingDAOTinkoffImpl();
     private final PortfolioDAO portfolioDAO = new PortfolioDAOTinkoffImpl();
 
