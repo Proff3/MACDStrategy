@@ -6,4 +6,6 @@ import java.util.function.Function;
 
 public interface Strategy {
     void addCandle(CustomCandle candle);
+    Boolean isTimeToBuy();
+    Boolean isTimeToSell();
 }

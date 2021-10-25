@@ -6,7 +6,7 @@ import ru.pronin.tradeBot.strategies.Strategy;
 
 import java.util.function.Function;
 
-public class BrokerMACDImplementation {
+public class BrokerMACDImplementation implements Runnable {
 
     //BBG000B9XRY4 - apple
     Strategy MACD = new MACD(8, 17, 9, "BBG000B9XRY4");
@@ -19,5 +19,8 @@ public class BrokerMACDImplementation {
             new PortfolioDAOTinkoffImpl()
     );
 
-
+    @Override
+    public void run() {
+        //broker.getSubscriptionDAO().setSubscriber();
+    }
 }

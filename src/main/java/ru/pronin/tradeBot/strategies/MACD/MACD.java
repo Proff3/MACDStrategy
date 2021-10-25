@@ -41,11 +41,18 @@ public class MACD implements Strategy {
         difference = MACD.subtract(signalEMA.getCurrentValue());
         differenceInPercents = MACD
                 .subtract(signalEMA.getCurrentValue())
-                .divide(candle.getC(), 5, RoundingMode.HALF_UP);
+                .divide(candle.getC(), 5, RoundingMode.HALF_UP)
+                .multiply(new BigDecimal(100));
     }
 
+    @Override
     public Boolean isTimeToBuy(){
         return MACD.compareTo(signalEMA.getCurrentValue()) > 0;
+    }
+
+    @Override
+    public Boolean isTimeToSell() {
+        return getDifferenceInPercents().compareTo(new BigDecimal(5)) < 0;
     }
 
     public BigDecimal getDifference() {
