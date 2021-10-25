@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-public class BrokerDAOTinkoffImpl extends BrokerDAO {
+public class BrokerDAOTinkoffImpl extends BrokerDAO<StreamingEvent> {
 
     public MarketContext MARKET;
     public SandboxContext SANDBOX;

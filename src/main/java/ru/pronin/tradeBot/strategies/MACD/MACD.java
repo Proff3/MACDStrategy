@@ -55,6 +55,12 @@ public class MACD implements Strategy {
         return getDifferenceInPercents().compareTo(new BigDecimal(5)) < 0;
     }
 
+    //write method
+    @Override
+    public Boolean isOver() {
+        return false;
+    }
+
     public BigDecimal getDifference() {
         return difference;
     }

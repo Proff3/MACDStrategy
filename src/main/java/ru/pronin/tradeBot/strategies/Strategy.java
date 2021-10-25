@@ -8,4 +8,5 @@ public interface Strategy {
     void addCandle(CustomCandle candle);
     Boolean isTimeToBuy();
     Boolean isTimeToSell();
+    Boolean isOver();
 }

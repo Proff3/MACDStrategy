@@ -4,17 +4,19 @@ import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 
-public class CustomCandle {
+public class CustomCandle extends AbstractCandle {
 
+    //
+    private Integer v = null;
+    private ZonedDateTime time;
     private String figi = null;
     private CustomCandleResolution interval = null;
     private BigDecimal o = null;
     private BigDecimal c = null;
     private BigDecimal h = null;
     private BigDecimal l = null;
-    private Integer v = null;
-    private OffsetDateTime time = null;
 
     public CustomCandle(String figi, CustomCandleResolution interval, BigDecimal o, BigDecimal c, BigDecimal h, BigDecimal l, Integer v, OffsetDateTime time) {
         this.figi = figi;
@@ -24,10 +26,45 @@ public class CustomCandle {
         this.h = h;
         this.l = l;
         this.v = v;
-        this.time = time;
+        this.time = time.toZonedDateTime();
+    }
+
+    public CustomCandle(String figi, CustomCandleResolution interval, BigDecimal o, BigDecimal c, BigDecimal h, BigDecimal l, BigDecimal traidingValue, ZonedDateTime dateTime) {
+        this.figi = figi;
+        this.interval = interval;
+        this.o = o;
+        this.c = c;
+        this.h = h;
+        this.l = l;
+        this.v = traidingValue.intValue();
+        this.time = dateTime;
     }
 
     public CustomCandle(){}
+
+    public Integer getV() {
+        return v;
+    }
+
+    public void setV(Integer v) {
+        this.v = v;
+    }
+
+    public void setV(BigDecimal v) {
+        this.v = v.intValue();
+    }
+
+    public ZonedDateTime getTime() {
+        return time;
+    }
+
+    public void setTime(OffsetDateTime time) {
+        this.time = time.toZonedDateTime();
+    }
+
+    public void setTime(ZonedDateTime time) {
+        this.time = time;
+    }
 
     public String getFigi() {
         return figi;
@@ -75,21 +112,5 @@ public class CustomCandle {
 
     public void setL(BigDecimal l) {
         this.l = l;
-    }
-
-    public Integer getV() {
-        return v;
-    }
-
-    public void setV(Integer v) {
-        this.v = v;
-    }
-
-    public OffsetDateTime getTime() {
-        return time;
-    }
-
-    public void setTime(OffsetDateTime time) {
-        this.time = time;
     }
 }
