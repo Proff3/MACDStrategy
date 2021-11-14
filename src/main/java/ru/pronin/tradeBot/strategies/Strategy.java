@@ -8,5 +8,9 @@ public interface Strategy {
     void addCandle(CustomCandle candle);
     Boolean isTimeToBuy();
     Boolean isTimeToSell();
+    Boolean isEnoughInformation();
     Boolean isOver();
+    int getStrategyDepth();
+    void setOver();
+    String getFigi();
 }

@@ -1,12 +1,20 @@
 package ru.pronin.tradeBot;
 
+import ru.pronin.tradeBot.brokerAPI.BrokerDAO;
+import ru.pronin.tradeBot.brokerAPI.EventHandlerFactory;
 import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
-import ru.pronin.tradeBot.brokerAPI.tinkoff.TinkoffConvertor;
+import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
+import ru.pronin.tradeBot.brokerAPI.exceptions.EventHandlerNotInitializeException;
+import ru.pronin.tradeBot.brokerAPI.tinkoff.*;
 import ru.pronin.tradeBot.strategies.MACD.EMA;
+import ru.pronin.tradeBot.strategies.MACD.MACD;
+import ru.pronin.tradeBot.strategies.RunnableStrategy;
+import ru.pronin.tradeBot.strategies.Strategy;
 import ru.tinkoff.invest.openapi.*;
 import ru.tinkoff.invest.openapi.model.rest.Candle;
 import ru.tinkoff.invest.openapi.model.rest.CandleResolution;
 import ru.tinkoff.invest.openapi.model.rest.MarketInstrument;
+import ru.tinkoff.invest.openapi.model.streaming.StreamingEvent;
 import ru.tinkoff.invest.openapi.okhttp.OkHttpOpenApi;
 
 import java.io.FileReader;
@@ -15,41 +23,27 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class Main {
 
-    public static MarketContext MARKET;
-    public static SandboxContext SANDBOX;
-    public static OrdersContext ORDERS;
-    public static PortfolioContext PORTFOLIO;
-    public static List<MarketInstrument> MARKET_INSTRUMENTS;
-
-    static {
-        OpenApi api = new OkHttpOpenApi(getToken(), true);
-        SANDBOX = api.getSandboxContext();
-        MARKET = api.getMarketContext();
-        ORDERS = api.getOrdersContext();
-        PORTFOLIO = api.getPortfolioContext();
-        try {
-            MARKET_INSTRUMENTS = MARKET.getMarketStocks().get().getInstruments();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        String appleFigi = "BBG000B9XRY4";
-        OffsetDateTime dateFrom = OffsetDateTime.now().minusWeeks(1L);
-        List<Candle> appleCandles =
-                MARKET
-                        .getMarketCandles(appleFigi, dateFrom, OffsetDateTime.now(), CandleResolution.HOUR)
-                        .get()
-                        .orElse(null)
-                        .getCandles();
-        EMA ema = new EMA(5);
-        appleCandles.stream()
-                .map(TinkoffConvertor::convertOriginCandleToCustom)
-                .forEach(ema::addCandle);
+    public static void main(String[] args) {
+        List<String> figiStocks = List.of("BBG000B9XRY4"); //APPLE
+        List<Strategy> strategies = List.of(new MACD("BBG000B9XRY4"));
+        BrokerDAO broker = new BrokerDAOTinkoffImpl(
+                true,
+                new InstrumentsDataDAOTinkoffImpl(),
+                new SubscriptionDAOTinkoffImpl(),
+                new TradingDAOTinkoffImpl(),
+                new PortfolioDAOTinkoffImpl());
+        Runnable runnableStrategies = new RunnableStrategy<StreamingEvent>(
+                strategies,
+                broker,
+                EventHandlerFactory.getTinkoffEventHandler(strategies),
+                figiStocks,
+                CustomCandleResolution._5MIN);
+        runnableStrategies.run();
     }
 
     private static String getToken() {

@@ -2,6 +2,7 @@ package ru.pronin.tradeBot.brokerAPI.tinkoff;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+import ru.pronin.tradeBot.brokerAPI.EventHandlerFactory;
 import ru.tinkoff.invest.openapi.model.streaming.StreamingEvent;
 
 import java.util.function.Consumer;
@@ -9,15 +10,16 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
-
-public class TinkoffSubscriber implements Subscriber<StreamingEvent> {
+public class TinkoffSubscriber<SE extends StreamingEvent> implements Subscriber<SE> {
 
     private final Logger LOGGER = Logger.getLogger(String.valueOf(TinkoffSubscriber.class));
     private Subscription subscription;
-    private final Function<StreamingEvent, Boolean> eventHandler;
+    private final Function<SE, Boolean> eventHandler;
+    private final Runnable setOverHandle;
 
-    public TinkoffSubscriber(Function<StreamingEvent, Boolean> eventHandler) {
+    public TinkoffSubscriber(Function<SE, Boolean> eventHandler, Runnable setOverHandler) {
         this.eventHandler = eventHandler;
+        this.setOverHandle = setOverHandler;
     }
 
     @Override
@@ -27,19 +29,21 @@ public class TinkoffSubscriber implements Subscriber<StreamingEvent> {
     }
 
     @Override
-    public void onNext(StreamingEvent streamingEvent) {
-        Boolean isEnded = eventHandler.apply(streamingEvent);
+    public void onNext(SE se) {
+        Boolean isEnded = eventHandler.apply(se);
         int n = isEnded ? 0 : 100;
         subscription.request(n);
     }
 
     @Override
     public void onError(Throwable t) {
-        t.printStackTrace();
+        LOGGER.info(t.getMessage());
+        setOverHandle.run();
     }
 
     @Override
     public void onComplete() {
         LOGGER.info("Completed");
+        setOverHandle.run();
     }
 }

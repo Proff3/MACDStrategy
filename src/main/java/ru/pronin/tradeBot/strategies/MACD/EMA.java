@@ -16,15 +16,18 @@ public class EMA {
     private BigDecimal currentValue = BigDecimal.ZERO.setScale(5,RoundingMode.HALF_UP);
     private BigDecimal previousValue = BigDecimal.ZERO.setScale(5,RoundingMode.HALF_UP);
     private final int timePeriod;
+    private final int depth;
     private final BigDecimal alpha;
 
     public EMA(int timePeriod) {
         this.timePeriod = timePeriod;
         alpha = BigDecimal.valueOf(2.0 / (timePeriod + 1));
+        depth = timePeriod * 5;
     }
 
     public void addCandle(CustomCandle currentCandle){
         if (listOfCandles.isEmpty()) {
+            currentValue = currentCandle.getC();
             listOfCandles.add(currentCandle);
             return;
         }
@@ -48,11 +51,18 @@ public class EMA {
             BigDecimal candleValue = currentValue.multiply(BigDecimal.ONE.subtract(alpha)).setScale(5,RoundingMode.HALF_UP);
             currentValue = alphaValue.add(candleValue);
         }
-        LOGGER.info(currentValue.setScale(2, RoundingMode.HALF_UP) + " " + currentCandle.getTime().toString());
-        if (listOfCandles.size() >= 50) listOfCandles.remove(0);
+        if (listOfCandles.size() >= depth) listOfCandles.remove(0);
     }
 
     public BigDecimal getCurrentValue() {
         return currentValue;
+    }
+
+    public Boolean isEMAFullfilled(){
+        return listOfCandles.size() > timePeriod;
+    }
+
+    public int getDepth() {
+        return depth;
     }
 }

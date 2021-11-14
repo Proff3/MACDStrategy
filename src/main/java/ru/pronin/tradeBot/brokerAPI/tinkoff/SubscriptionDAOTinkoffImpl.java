@@ -1,6 +1,5 @@
 package ru.pronin.tradeBot.brokerAPI.tinkoff;
 
-import org.reactivestreams.Subscriber;
 import ru.pronin.tradeBot.brokerAPI.SubscriptionDAO;
 import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
 import ru.pronin.tradeBot.brokerAPI.exceptions.EventHandlerNotInitializeException;
@@ -12,7 +11,7 @@ import ru.tinkoff.invest.openapi.model.streaming.StreamingRequest;
 
 import java.util.function.Function;
 
-public class SubscriptionDAOTinkoffImpl implements SubscriptionDAO<StreamingEvent> {
+public class SubscriptionDAOTinkoffImpl implements SubscriptionDAO {
 
     private Boolean isSubscribeSet;
     private StreamingContext STREAM;
@@ -26,7 +25,7 @@ public class SubscriptionDAOTinkoffImpl implements SubscriptionDAO<StreamingEven
     public void subscribeOnCandles(String figi, CustomCandleResolution customCandleResolution)
             throws EventHandlerNotInitializeException {
         if (!isSubscribeSet) throw new EventHandlerNotInitializeException();
-        CandleInterval interval = CandleInterval.valueOf(customCandleResolution.getValue());
+        CandleInterval interval = CandleInterval.fromValue(customCandleResolution.getValue());
         StreamingRequest candleRequest = StreamingRequest.subscribeCandle(figi, interval);
         STREAM.sendRequest(candleRequest);
     }
@@ -46,8 +45,9 @@ public class SubscriptionDAOTinkoffImpl implements SubscriptionDAO<StreamingEven
     }
 
     @Override
-    public void setSubscriber(Function<StreamingEvent, Boolean> eventHandler) {
-        Subscriber<StreamingEvent> subscriber = new TinkoffSubscriber(eventHandler);
+    public <SE> void setSubscriber(Function<SE, Boolean> eventHandler, Runnable setterOver) {
+        TinkoffSubscriber<StreamingEvent> subscriber = new TinkoffSubscriber(eventHandler, setterOver);
+        System.out.println("Subscribed");
         STREAM.subscribe(subscriber);
         isSubscribeSet = true;
     }

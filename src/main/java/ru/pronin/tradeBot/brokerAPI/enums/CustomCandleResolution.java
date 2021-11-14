@@ -22,7 +22,6 @@ public enum CustomCandleResolution {
         this.value = value;
     }
 
-    @JsonValue
     public String getValue() {
         return value;
     }
@@ -32,7 +31,6 @@ public enum CustomCandleResolution {
         return String.valueOf(value);
     }
 
-    @JsonCreator
     public static CustomCandleResolution fromValue(String text) {
         for (CustomCandleResolution b : CustomCandleResolution.values()) {
             if (String.valueOf(b.value).equals(text)) {

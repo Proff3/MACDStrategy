@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 
-public class CustomCandle extends AbstractCandle {
+public class CustomCandle {
 
     //
     private Integer v = null;
@@ -18,7 +18,14 @@ public class CustomCandle extends AbstractCandle {
     private BigDecimal h = null;
     private BigDecimal l = null;
 
-    public CustomCandle(String figi, CustomCandleResolution interval, BigDecimal o, BigDecimal c, BigDecimal h, BigDecimal l, Integer v, OffsetDateTime time) {
+    public CustomCandle(String figi,
+                        CustomCandleResolution interval,
+                        BigDecimal o,
+                        BigDecimal c,
+                        BigDecimal h,
+                        BigDecimal l,
+                        Integer v,
+                        OffsetDateTime time) {
         this.figi = figi;
         this.interval = interval;
         this.o = o;
@@ -29,7 +36,14 @@ public class CustomCandle extends AbstractCandle {
         this.time = time.toZonedDateTime();
     }
 
-    public CustomCandle(String figi, CustomCandleResolution interval, BigDecimal o, BigDecimal c, BigDecimal h, BigDecimal l, BigDecimal traidingValue, ZonedDateTime dateTime) {
+    public CustomCandle(String figi,
+                        CustomCandleResolution interval,
+                        BigDecimal o,
+                        BigDecimal c,
+                        BigDecimal h,
+                        BigDecimal l,
+                        BigDecimal traidingValue,
+                        ZonedDateTime dateTime) {
         this.figi = figi;
         this.interval = interval;
         this.o = o;
@@ -38,6 +52,29 @@ public class CustomCandle extends AbstractCandle {
         this.l = l;
         this.v = traidingValue.intValue();
         this.time = dateTime;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class Candle {\n");
+
+        sb.append("    figi: ").append(toIndentedString(figi)).append("\n");
+        sb.append("    interval: ").append(toIndentedString(interval)).append("\n");
+        sb.append("    o: ").append(toIndentedString(o)).append("\n");
+        sb.append("    c: ").append(toIndentedString(c)).append("\n");
+        sb.append("    h: ").append(toIndentedString(h)).append("\n");
+        sb.append("    l: ").append(toIndentedString(l)).append("\n");
+        sb.append("    v: ").append(toIndentedString(v)).append("\n");
+        sb.append("    time: ").append(toIndentedString(time)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    private String toIndentedString(java.lang.Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
     }
 
     public CustomCandle(){}

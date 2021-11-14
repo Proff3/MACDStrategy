@@ -1,15 +1,15 @@
 package ru.pronin.tradeBot.brokerAPI;
 
-public abstract class BrokerDAO<SE> {
+public abstract class BrokerDAO {
 
-    private InstrumentsDataDAO instrumentsDataDAO;
-    private SubscriptionDAO<SE> subscriptionDAO;
-    private TradingDAO tradingDAO;
-    private PortfolioDAO portfolioDAO;
+    private final InstrumentsDataDAO instrumentsDataDAO;
+    private final SubscriptionDAO subscriptionDAO;
+    private final TradingDAO tradingDAO;
+    private final PortfolioDAO portfolioDAO;
 
     public BrokerDAO(
             InstrumentsDataDAO instrumentsDataDAO,
-            SubscriptionDAO<SE> subscriptionDAO,
+            SubscriptionDAO subscriptionDAO,
             TradingDAO tradingDAO,
             PortfolioDAO portfolioDAO) {
         this.instrumentsDataDAO = instrumentsDataDAO;
@@ -22,7 +22,7 @@ public abstract class BrokerDAO<SE> {
         return instrumentsDataDAO;
     }
 
-    public SubscriptionDAO<SE> getSubscriptionDAO() {
+    public SubscriptionDAO getSubscriptionDAO() {
         return subscriptionDAO;
     }
 

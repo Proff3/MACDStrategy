@@ -3,6 +3,7 @@ package ru.pronin.tradeBot.brokerAPI.tinkoff;
 import ru.pronin.tradeBot.brokerAPI.InstrumentsDataDAO;
 import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
 import ru.pronin.tradeBot.brokerAPI.entities.CustomMarketInstrument;
+import ru.pronin.tradeBot.brokerAPI.entities.RequestCounter;
 import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
 import ru.pronin.tradeBot.brokerAPI.enums.CustomCurrency;
 import ru.pronin.tradeBot.brokerAPI.exceptions.CandlesNotFoundException;
@@ -16,11 +17,14 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
 
+    private Logger LOGGER = Logger.getLogger(InstrumentsDataDAOTinkoffImpl.class.toString());
     private MarketContext MARKET;
+    private RequestCounter counter = new RequestCounter();
     List<CustomMarketInstrument> instruments;
 
     public void setMARKET(MarketContext MARKET) {
@@ -45,38 +49,60 @@ public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
     }
 
     @Override
-    public List<CustomCandle> getCandlesForWeeks(String figi, int numberOfWeeks, CustomCandleResolution customCandleResolution) throws Exception {
-        OffsetDateTime dateFrom = OffsetDateTime.now().minusWeeks(numberOfWeeks);
-        return getCandlesForTime(dateFrom, figi, customCandleResolution);
+    public List<CustomCandle> getRequiredNumberOfCandles(String figi, int requiredNumberOfCandles, CustomCandleResolution customCandleResolution) throws Exception {
+        int maxIntervalInDays = getRequiredIntervalInDays(customCandleResolution);
+        int skippedDays = maxIntervalInDays;
+        List<CustomCandle> candles = new ArrayList<>();
+        while(requiredNumberOfCandles > candles.size()){
+            candles.addAll(0, getCandlesForTimeInterval(
+                                        OffsetDateTime.now().minusDays(skippedDays),
+                                        OffsetDateTime.now().minusDays(skippedDays - maxIntervalInDays),
+                                        figi,
+                                        customCandleResolution));
+            skippedDays += maxIntervalInDays;
+        }
+        return candles;
     }
 
-    private List<CustomCandle> getCandlesForTime(OffsetDateTime dateFrom, String figi, CustomCandleResolution resolution) throws Exception {
-        CandleResolution candleResolution = CandleResolution.fromValue(resolution.getValue());
-        List<CustomCandle> resultCustomCandles = new ArrayList<>();
-        while(dateFrom.isBefore(OffsetDateTime.now().minusDays(1))){
-            List<CustomCandle> middlewareCustomCandles = MARKET
-                    .getMarketCandles(figi, dateFrom, dateFrom.plusWeeks(1), candleResolution)
-                    .get()
-                    .orElseThrow(() -> {
-                        try {
-                            instruments
-                                    .stream()
-                                    .filter(instrument -> instrument.getFigi().equalsIgnoreCase(figi))
-                                    .findFirst()
-                                    .orElseThrow(NoMarketInstrumentException::new);
-                            return new CandlesNotFoundException();
-                        } catch (NoMarketInstrumentException e) {
-                            return new NoMarketInstrumentException();
-                        }
-                    })
-                    .getCandles()
-                    .stream()
-                    .map(InstrumentsDataDAOTinkoffImpl::tinkoffCandleToCustom)
-                    .collect(Collectors.toList());
-            dateFrom = dateFrom.plusWeeks(1);
-            resultCustomCandles.addAll(middlewareCustomCandles);
+    @Override
+    public List<CustomCandle> getCandlesFromDateTime(String figi, OffsetDateTime startTime, CustomCandleResolution customCandleResolution) throws Exception {
+        int maxIntervalInDays = getRequiredIntervalInDays(customCandleResolution);
+        OffsetDateTime currentTime = startTime;
+        List<CustomCandle> candles = new ArrayList<>();
+        while(currentTime.isBefore(OffsetDateTime.now())){
+            candles.addAll(0, getCandlesForTimeInterval(
+                    currentTime,
+                    currentTime.plusDays(maxIntervalInDays),
+                    figi,
+                    customCandleResolution));
+            LOGGER.info(String.valueOf(candles.size()));
+            currentTime = currentTime.plusDays(maxIntervalInDays);
         }
-        return resultCustomCandles;
+        return candles;
+    }
+
+    private List<CustomCandle> getCandlesForTimeInterval(OffsetDateTime dateFrom, OffsetDateTime dateTo, String figi, CustomCandleResolution resolution) throws Exception {
+        CandleResolution candleResolution = CandleResolution.fromValue(resolution.getValue());
+        checkCounter();
+        return MARKET
+                .getMarketCandles(figi, dateFrom, dateTo, candleResolution)
+                .get()
+                .orElseThrow(() -> {
+                    try {
+                        instruments
+                                .stream()
+                                .filter(instrument -> instrument.getFigi().equalsIgnoreCase(figi))
+                                .findFirst()
+                                .orElseThrow(NoMarketInstrumentException::new);
+                        return new CandlesNotFoundException();
+                    } catch (NoMarketInstrumentException e) {
+                        return new NoMarketInstrumentException();
+                    }
+                })
+                .getCandles()
+                .stream()
+                .map(InstrumentsDataDAOTinkoffImpl::tinkoffCandleToCustom)
+                .collect(Collectors.toList());
     }
 
     private static CustomMarketInstrument tinkoffInstrumentToCustom(MarketInstrument tinkoffInstrument){
@@ -103,4 +129,43 @@ public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
                 candle.getTime()
         );
     }
+
+
+    /**
+     * Tinkoff OpenApi has limits on number of candles, therefore we need to map resolution to number of days - max value in the limits
+     * @param resolution
+     * @return Max interval in days
+     */
+    private int getRequiredIntervalInDays(CustomCandleResolution resolution){
+        switch (resolution){
+            case _1MIN:
+            case _2MIN:
+            case _3MIN:
+            case _5MIN:
+            case _10MIN:
+            case _15MIN:
+            case _30MIN:
+                return 1;
+            case HOUR:
+                return 7;
+            case DAY:
+                return 364;
+            case WEEK:
+                return 364 * 2;
+            case MONTH:
+                return 365 * 3;
+        }
+        return 1;
+    }
+
+    private void checkCounter() throws InterruptedException {
+        while(counter.getValue() > 150) {
+            Thread.sleep(10 * 1000);
+            if (counter.getStartDate().plusMinutes(1).isAfter(OffsetDateTime.now())){
+                counter.resetCounter();
+                counter.setStartDate(OffsetDateTime.now());
+            }
+        }
+    }
+
 }
