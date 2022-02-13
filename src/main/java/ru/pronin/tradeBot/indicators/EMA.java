@@ -1,7 +1,6 @@
-package ru.pronin.tradeBot.strategies.MACD;
+package ru.pronin.tradeBot.indicators;
 
 import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
-import ru.tinkoff.invest.openapi.model.rest.Candle;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -10,14 +9,16 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class EMA {
-    private final Logger LOGGER = Logger.getLogger(String.valueOf(EMA.class));
+public class EMA implements Indicator {
+
     private final List<CustomCandle> listOfCandles = new ArrayList<>();
-    private BigDecimal currentValue = BigDecimal.ZERO.setScale(5,RoundingMode.HALF_UP);
-    private BigDecimal previousValue = BigDecimal.ZERO.setScale(5,RoundingMode.HALF_UP);
     private final int timePeriod;
     private final int depth;
     private final BigDecimal alpha;
+
+    private BigDecimal currentValue = BigDecimal.ZERO.setScale(5,RoundingMode.HALF_UP);
+    private BigDecimal previousValue = BigDecimal.ZERO.setScale(5,RoundingMode.HALF_UP);
+    private boolean isOver;
 
     public EMA(int timePeriod) {
         this.timePeriod = timePeriod;
@@ -25,6 +26,7 @@ public class EMA {
         depth = timePeriod * 5;
     }
 
+    @Override
     public void addCandle(CustomCandle currentCandle){
         if (listOfCandles.isEmpty()) {
             currentValue = currentCandle.getC();
@@ -54,15 +56,27 @@ public class EMA {
         if (listOfCandles.size() >= depth) listOfCandles.remove(0);
     }
 
-    public BigDecimal getCurrentValue() {
-        return currentValue;
-    }
-
-    public Boolean isEMAFullfilled(){
+    @Override
+    public Boolean isEnoughInformation() {
         return listOfCandles.size() > timePeriod;
     }
 
-    public int getDepth() {
+    @Override
+    public Boolean isOver() {
+        return isOver;
+    }
+
+    @Override
+    public int getIndicatorDepth() {
         return depth;
+    }
+
+    @Override
+    public void setOver() {
+        isOver = true;
+    }
+
+    public BigDecimal getCurrentValue() {
+        return currentValue;
     }
 }

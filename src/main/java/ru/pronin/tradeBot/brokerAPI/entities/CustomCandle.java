@@ -54,20 +54,30 @@ public class CustomCandle {
         this.time = dateTime;
     }
 
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class Candle {\n");
+    static public CustomCandle getCandleWithNewCloseValue(CustomCandle candle, BigDecimal value) {
+        return new CustomCandle(
+                candle.getFigi(),
+                candle.getInterval(),
+                candle.getO(),
+                value,
+                candle.getH(),
+                candle.getL(),
+                candle.getV(),
+                candle.getTime().toOffsetDateTime()
+        );
+    }
 
-        sb.append("    figi: ").append(toIndentedString(figi)).append("\n");
-        sb.append("    interval: ").append(toIndentedString(interval)).append("\n");
-        sb.append("    o: ").append(toIndentedString(o)).append("\n");
-        sb.append("    c: ").append(toIndentedString(c)).append("\n");
-        sb.append("    h: ").append(toIndentedString(h)).append("\n");
-        sb.append("    l: ").append(toIndentedString(l)).append("\n");
-        sb.append("    v: ").append(toIndentedString(v)).append("\n");
-        sb.append("    time: ").append(toIndentedString(time)).append("\n");
-        sb.append("}");
-        return sb.toString();
+    public String toString() {
+        return "class Candle {\n" +
+                "    figi: " + toIndentedString(figi) + "\n" +
+                "    interval: " + toIndentedString(interval) + "\n" +
+                "    o: " + toIndentedString(o) + "\n" +
+                "    c: " + toIndentedString(c) + "\n" +
+                "    h: " + toIndentedString(h) + "\n" +
+                "    l: " + toIndentedString(l) + "\n" +
+                "    v: " + toIndentedString(v) + "\n" +
+                "    time: " + toIndentedString(time) + "\n" +
+                "}";
     }
 
     private String toIndentedString(java.lang.Object o) {

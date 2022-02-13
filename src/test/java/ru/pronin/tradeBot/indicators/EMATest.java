@@ -1,8 +1,8 @@
-package ru.pronin.tradeBot.strategies.MACD;
+package ru.pronin.tradeBot.indicators;
 
 import org.junit.jupiter.api.Test;
 import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
-import ru.tinkoff.invest.openapi.model.rest.Candle;
+import ru.pronin.tradeBot.indicators.EMA;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
