@@ -18,7 +18,7 @@ public class CandleArray {
         return candles;
     }
 
-    public void addCandle(CustomCandle candle) {
+    public void add(CustomCandle candle) {
         if (candles.isEmpty()) {
             candles.add(candle);
             return;

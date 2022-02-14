@@ -1,11 +1,10 @@
 package ru.pronin.tradeBot.indicators;
 
 import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
+import ru.pronin.tradeBot.indicators.utils.CandleArray;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
 
 public class StochasticOscillator implements Indicator {
 
@@ -16,12 +15,13 @@ public class StochasticOscillator implements Indicator {
     private BigDecimal max;
     private BigDecimal min;
     private BigDecimal value;
-    private final List<CustomCandle> candles = new ArrayList<>();
+    private final CandleArray candles;
     private boolean isOver = false;
 
     public StochasticOscillator(int depth,int emaDepth) {
         DEPTH = depth;
         EMA = new EMA(emaDepth);
+        candles = new CandleArray(depth);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class StochasticOscillator implements Indicator {
 
     @Override
     public Boolean isEnoughInformation() {
-        return candles.size() >= DEPTH && EMA.isEnoughInformation();
+        return candles.getSize() >= DEPTH && EMA.isEnoughInformation();
     }
 
     @Override
@@ -54,7 +54,7 @@ public class StochasticOscillator implements Indicator {
     }
 
     private void calculate(CustomCandle candle) {
-        if(candles.get(candles.size() - 1).getTime().compareTo(candle.getTime()) == 0) candles.remove(candles.size() - 1);
+        candles.add(candle);
         updateLimits(candle);
         value = processCandle(candle);
         CustomCandle candleWithCalculatedValue = CustomCandle.getCandleWithNewCloseValue(candle, value);
@@ -62,12 +62,10 @@ public class StochasticOscillator implements Indicator {
     }
 
     private void updateLimits(CustomCandle candle) {
-        if(candles.size() >= DEPTH) candles.remove(0);
-        BigDecimal currentMax = candles.stream().map(CustomCandle::getH).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
-        BigDecimal currentMin = candles.stream().map(CustomCandle::getL).min(BigDecimal::compareTo).orElse(new BigDecimal(1_000_000));
+        BigDecimal currentMax = candles.getCandles().stream().map(CustomCandle::getH).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+        BigDecimal currentMin = candles.getCandles().stream().map(CustomCandle::getL).min(BigDecimal::compareTo).orElse(new BigDecimal(1_000_000));
         max = candle.getH().compareTo(currentMax) > 0 ? candle.getH() : currentMax;
         min = candle.getL().compareTo(currentMin) < 0 ? candle.getL() : currentMin;
-        candles.add(candle);
     }
 
     private BigDecimal processCandle(CustomCandle candle) {

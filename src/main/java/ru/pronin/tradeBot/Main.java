@@ -7,6 +7,7 @@ import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
 import ru.pronin.tradeBot.brokerAPI.tinkoff.*;
 import ru.pronin.tradeBot.indicators.MACD;
 import ru.pronin.tradeBot.indicators.Indicator;
+import ru.pronin.tradeBot.indicators.SMA;
 import ru.pronin.tradeBot.indicators.StochasticOscillator;
 import ru.tinkoff.invest.openapi.model.rest.CandleResolution;
 import ru.tinkoff.invest.openapi.model.streaming.StreamingEvent;
@@ -22,13 +23,14 @@ public class Main {
     public static void main(String[] args) throws Exception {
         List<String> figiStocks = List.of("BBG000B9XRY4", "BBG002B04MT8"); //APPLE, UBER
         StochasticOscillator so = new StochasticOscillator(14, 3);
+        SMA sma = new SMA(15);
         BrokerDAO broker = new BrokerDAOTinkoffImpl(
                 true,
                 new InstrumentsDataDAOTinkoffImpl(),
                 new SubscriptionDAOTinkoffImpl(),
                 new TradingDAOTinkoffImpl(),
                 new PortfolioDAOTinkoffImpl());
-        List<CustomCandle> candles = broker.getInstrumentsDataDAO().getRequiredNumberOfCandles(figiStocks.get(1), 200, CustomCandleResolution._5MIN);
+        List<CustomCandle> candles = broker.getInstrumentsDataDAO().getRequiredNumberOfCandles(figiStocks.get(1), 25, CustomCandleResolution._5MIN);
         candles.forEach(c -> {
             so.addCandle(c);
             System.out.println("Current value " + so.getValue() + " EMA value " + so.getEmaValue() + " time " + c.getTime());
