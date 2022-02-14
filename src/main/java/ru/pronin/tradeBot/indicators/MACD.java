@@ -1,37 +1,29 @@
-package ru.pronin.tradeBot.strategies.MACD;
+package ru.pronin.tradeBot.indicators;
 
 import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
 import ru.pronin.tradeBot.brokerAPI.exceptions.WrongStrategyInitializationException;
-import ru.pronin.tradeBot.strategies.Strategy;
 
-import javax.crypto.Mac;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
 import java.util.logging.Logger;
 
-public class MACD implements Strategy {
+public class MACD implements Indicator {
 
     private boolean isOver = false;
     private final EMA fastEMA;
     private final EMA slowEMA;
     private final EMA signalEMA;
     private BigDecimal MACD = BigDecimal.valueOf(1_000_000_000);
-    private final String figi;
-    private final Logger LOGGER = Logger.getLogger(MACD.getClass().toString());
 
     /**
      * fastEMADepth = 8
      * slowEMADepth = 17
      * signalEMADepth = 9
      */
-    public MACD(String figi) {
+    public MACD() {
         fastEMA = new EMA(8);
         slowEMA = new EMA(17);
         signalEMA = new EMA(9);
-        this.figi = figi;
     }
 
     /**
@@ -39,14 +31,12 @@ public class MACD implements Strategy {
      * @param slowEMA - recommended for buy - 17 and for sale - 26
      * @param signalEMA - recommended - 9
      */
-    public MACD(EMA fastEMA, EMA slowEMA, EMA signalEMA, String figi) throws WrongStrategyInitializationException {
-        if (fastEMA.getDepth() >= slowEMA.getDepth()
-                || signalEMA.getDepth() >= slowEMA.getDepth()
-                || signalEMA.getDepth() <= slowEMA.getDepth()) throw new WrongStrategyInitializationException();
+    public MACD(EMA fastEMA, EMA slowEMA, EMA signalEMA) throws WrongStrategyInitializationException {
+        if (fastEMA.getIndicatorDepth() >= slowEMA.getIndicatorDepth()
+                || signalEMA.getIndicatorDepth() >= slowEMA.getIndicatorDepth()) throw new WrongStrategyInitializationException();
         this.fastEMA = fastEMA;
         this.slowEMA = slowEMA;
         this.signalEMA = signalEMA;
-        this.figi = figi;
     }
 
     @Override
@@ -55,35 +45,14 @@ public class MACD implements Strategy {
         fastEMA.addCandle(candle);
         slowEMA.addCandle(candle);
         MACD = fastEMA.getCurrentValue().subtract(slowEMA.getCurrentValue());
-        if (!fastEMA.isEMAFullfilled()) return;
-        CustomCandle MACDCandle = new CustomCandle(
-                candle.getFigi(),
-                candle.getInterval(),
-                candle.getO(),
-                MACD,
-                candle.getH(),
-                candle.getL(),
-                candle.getV(),
-                candle.getTime().toOffsetDateTime()
-        );
+        if (!fastEMA.isEnoughInformation()) return;
+        CustomCandle MACDCandle = CustomCandle.getCandleWithNewCloseValue(candle, MACD);
         signalEMA.addCandle(MACDCandle);
     }
 
     @Override
-    public Boolean isTimeToBuy(){
-        return MACD.compareTo(signalEMA.getCurrentValue()) > 0;
-    }
-
-    @Override
-    public Boolean isTimeToSell() {
-        if (getSignalValue().compareTo(MACD) >= 0) return true;
-        BigDecimal calculatedValue = getDifferenceInPercents().subtract(new BigDecimal(5)); // It`s a damper
-        return BigDecimal.ZERO.compareTo(calculatedValue) >= 0;
-    }
-
-    @Override
     public Boolean isEnoughInformation() {
-        return fastEMA.isEMAFullfilled() && slowEMA.isEMAFullfilled() && signalEMA.isEMAFullfilled();
+        return fastEMA.isEnoughInformation() && slowEMA.isEnoughInformation() && signalEMA.isEnoughInformation();
     }
 
     @Override
@@ -92,18 +61,13 @@ public class MACD implements Strategy {
     }
 
     @Override
-    public int getStrategyDepth() {
-        return (slowEMA.getDepth() + fastEMA.getDepth()) / 2;
+    public int getIndicatorDepth() {
+        return (slowEMA.getIndicatorDepth() + fastEMA.getIndicatorDepth()) / 2;
     }
 
     @Override
     public void setOver() {
         isOver = true;
-    }
-
-    @Override
-    public String getFigi() {
-        return figi;
     }
 
     public BigDecimal getSignalValue(){ return signalEMA.getCurrentValue(); }

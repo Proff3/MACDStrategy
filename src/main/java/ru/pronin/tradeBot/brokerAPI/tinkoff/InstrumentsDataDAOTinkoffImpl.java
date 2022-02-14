@@ -61,7 +61,7 @@ public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
                                         customCandleResolution));
             skippedDays += maxIntervalInDays;
         }
-        return candles;
+        return candles.stream().skip(candles.size() - requiredNumberOfCandles).collect(Collectors.toList());
     }
 
     @Override

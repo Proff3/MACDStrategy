@@ -4,7 +4,7 @@ import ru.pronin.tradeBot.brokerAPI.BrokerDAO;
 import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
 import ru.pronin.tradeBot.brokerAPI.entities.CustomMarketInstrument;
 import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
-import ru.tinkoff.invest.openapi.model.rest.CandleResolution;
+import ru.pronin.tradeBot.indicators.Indicator;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Map;
 
 public class StrategyTest implements Runnable {
-    final List<Strategy> strategies;
+    final List<Indicator> strategies;
     final OffsetDateTime startDate;
     final CustomCandleResolution resolution;
     final BrokerDAO broker;
 
-    public StrategyTest(List<Strategy> strategies, OffsetDateTime startDate, CustomCandleResolution resolution, BrokerDAO broker) {
+    public StrategyTest(List<Indicator> strategies, OffsetDateTime startDate, CustomCandleResolution resolution, BrokerDAO broker) {
         this.strategies = strategies;
         this.startDate = startDate;
         this.resolution = resolution;
