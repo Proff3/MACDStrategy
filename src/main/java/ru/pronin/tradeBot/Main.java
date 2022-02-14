@@ -13,6 +13,7 @@ import ru.tinkoff.invest.openapi.model.streaming.StreamingEvent;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
@@ -27,7 +28,7 @@ public class Main {
                 new SubscriptionDAOTinkoffImpl(),
                 new TradingDAOTinkoffImpl(),
                 new PortfolioDAOTinkoffImpl());
-        List<CustomCandle> candles = broker.getInstrumentsDataDAO().getRequiredNumberOfCandles(figiStocks.get(1), 100, CustomCandleResolution._5MIN);
+        List<CustomCandle> candles = broker.getInstrumentsDataDAO().getRequiredNumberOfCandles(figiStocks.get(1), 200, CustomCandleResolution._5MIN);
         candles.forEach(c -> {
             so.addCandle(c);
             System.out.println("Current value " + so.getValue() + " EMA value " + so.getEmaValue() + " time " + c.getTime());

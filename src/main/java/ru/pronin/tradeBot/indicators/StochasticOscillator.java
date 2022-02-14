@@ -54,6 +54,7 @@ public class StochasticOscillator implements Indicator {
     }
 
     private void calculate(CustomCandle candle) {
+        if(candles.get(candles.size() - 1).getTime().compareTo(candle.getTime()) == 0) candles.remove(candles.size() - 1);
         updateLimits(candle);
         value = processCandle(candle);
         CustomCandle candleWithCalculatedValue = CustomCandle.getCandleWithNewCloseValue(candle, value);
@@ -61,18 +62,18 @@ public class StochasticOscillator implements Indicator {
     }
 
     private void updateLimits(CustomCandle candle) {
-        if(candles.size() > DEPTH) candles.remove(0);
-        BigDecimal currentMax = candles.stream().map(CustomCandle::getC).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
-        BigDecimal currentMin = candles.stream().map(CustomCandle::getC).min(BigDecimal::compareTo).orElse(new BigDecimal(1_000_000));
-        max = candle.getC().compareTo(currentMax) > 0 ? candle.getC() : currentMax;
-        min = candle.getC().compareTo(currentMin) < 0 ? candle.getC() : currentMin;
+        if(candles.size() >= DEPTH) candles.remove(0);
+        BigDecimal currentMax = candles.stream().map(CustomCandle::getH).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+        BigDecimal currentMin = candles.stream().map(CustomCandle::getL).min(BigDecimal::compareTo).orElse(new BigDecimal(1_000_000));
+        max = candle.getH().compareTo(currentMax) > 0 ? candle.getH() : currentMax;
+        min = candle.getL().compareTo(currentMin) < 0 ? candle.getL() : currentMin;
         candles.add(candle);
     }
 
     private BigDecimal processCandle(CustomCandle candle) {
         BigDecimal numerator = candle.getC().subtract(min);
         BigDecimal denominator = max.compareTo(min) == 0 ? BigDecimal.ONE : max.subtract(min);
-        return MULTIPLIER.multiply(numerator.divide(denominator, RoundingMode.HALF_UP));
+        return MULTIPLIER.multiply(numerator.divide(denominator, 4, RoundingMode.HALF_UP));
     }
 
     public BigDecimal getValue() {
