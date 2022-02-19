@@ -18,6 +18,8 @@ class StochasticOscillatorTest {
     Function<BigDecimal, CustomCandle> createCandle = (value) -> {
         CustomCandle candle = new CustomCandle();
         candle.setC(value);
+        candle.setH(value.add(BigDecimal.TEN));
+        candle.setL(value.subtract(BigDecimal.TEN));
         candle.setTime(OffsetDateTime.now().plusSeconds(i++));
         return candle;
     };
@@ -34,29 +36,17 @@ class StochasticOscillatorTest {
         so.addCandle(createCandle.apply(new BigDecimal(300)));
         so.addCandle(createCandle.apply(new BigDecimal(400)));
         so.addCandle(createCandle.apply(new BigDecimal(500)));
-    }
-
-    @Test
-    void isEnoughInformation() {
-    }
-
-    @Test
-    void isOver() {
-    }
-
-    @Test
-    void getIndicatorDepth() {
-    }
-
-    @Test
-    void setOver() {
-    }
-
-    @Test
-    void getValue() {
-    }
-
-    @Test
-    void getEmaValue() {
+        so.addCandle(createCandle.apply(new BigDecimal(100)));
+        so.addCandle(createCandle.apply(new BigDecimal(200)));
+        so.addCandle(createCandle.apply(new BigDecimal(300)));
+        so.addCandle(createCandle.apply(new BigDecimal(400)));
+        so.addCandle(createCandle.apply(new BigDecimal(500)));
+        so.addCandle(createCandle.apply(new BigDecimal(100)));
+        so.addCandle(createCandle.apply(new BigDecimal(200)));
+        so.addCandle(createCandle.apply(new BigDecimal(300)));
+        so.addCandle(createCandle.apply(new BigDecimal(400)));
+        so.addCandle(createCandle.apply(new BigDecimal(500)));
+        assertEquals(new BigDecimal("97.6200"), so.getValue());
+        assertEquals(new BigDecimal("73.8100"), so.getEmaValue());
     }
 }
