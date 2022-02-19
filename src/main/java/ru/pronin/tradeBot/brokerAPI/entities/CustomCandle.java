@@ -5,6 +5,7 @@ import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 public class CustomCandle {
 
@@ -159,5 +160,17 @@ public class CustomCandle {
 
     public void setL(BigDecimal l) {
         this.l = l;
+    }
+
+    @Override
+    public boolean equals(Object o1) {
+        if (this == o1) return true;
+        if (!(o1 instanceof CustomCandle that)) return false;
+        return getV().equals(that.getV()) && getTime().equals(that.getTime()) && getFigi().equals(that.getFigi()) && getInterval() == that.getInterval() && getO().equals(that.getO()) && getC().equals(that.getC()) && getH().equals(that.getH()) && getL().equals(that.getL());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getV(), getTime(), getFigi(), getInterval(), getO(), getC(), getH(), getL());
     }
 }
