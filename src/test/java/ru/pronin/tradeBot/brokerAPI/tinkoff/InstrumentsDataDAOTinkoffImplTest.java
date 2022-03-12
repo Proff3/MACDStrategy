@@ -1,6 +1,5 @@
 package ru.pronin.tradeBot.brokerAPI.tinkoff;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,21 +11,19 @@ import ru.pronin.tradeBot.brokerAPI.entities.CustomMarketInstrument;
 import ru.pronin.tradeBot.brokerAPI.enums.CustomCandleResolution;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class InstrumentsDataDAOTinkoffImplTest {
 
     private BrokerDAO tinkoff;
-    private Logger LOGGER = Logger.getLogger(InstrumentsDataDAOTinkoffImplTest.class.toString());
+    private final Logger LOGGER = Logger.getLogger(InstrumentsDataDAOTinkoffImplTest.class.toString());
 
     @Spy
     private InstrumentsDataDAOTinkoffImpl tinkoffInstruments = new InstrumentsDataDAOTinkoffImpl();
