@@ -54,7 +54,7 @@ public class BollingerBands implements Indicator {
     }
 
     public BigDecimal getMLValue() {
-        return ML.getCurrentValue();
+        return ML.getCurrentValue().getValue();
     }
 
     public BigDecimal getHLValue() {
@@ -70,8 +70,8 @@ public class BollingerBands implements Indicator {
                 .divide(new BigDecimal(DEPTH), 4, RoundingMode.HALF_UP)
                 .sqrt(MathContext.DECIMAL64)
                 .multiply(MULTIPLIER);
-        HL = ML.getCurrentValue().add(productOfMultiplication).setScale(4, RoundingMode.HALF_UP);
-        LL = ML.getCurrentValue().subtract(productOfMultiplication).setScale(4, RoundingMode.HALF_UP);
+        HL = ML.getCurrentValue().getValue().add(productOfMultiplication).setScale(4, RoundingMode.HALF_UP);
+        LL = ML.getCurrentValue().getValue().subtract(productOfMultiplication).setScale(4, RoundingMode.HALF_UP);
     }
 
     private BigDecimal getSum() {
@@ -82,7 +82,7 @@ public class BollingerBands implements Indicator {
     }
 
     private final BinaryOperator<BigDecimal> squaredSumOperator = (acc, value) -> {
-        BigDecimal squaredSum = value.subtract(ML.getCurrentValue()).setScale(4, RoundingMode.HALF_UP).pow(2);
+        BigDecimal squaredSum = value.subtract(ML.getCurrentValue().getValue()).setScale(4, RoundingMode.HALF_UP).pow(2);
         return acc.add(squaredSum);
     };
 }

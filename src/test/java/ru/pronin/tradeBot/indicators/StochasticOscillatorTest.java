@@ -46,7 +46,7 @@ class StochasticOscillatorTest {
         so.addCandle(createCandle.apply(new BigDecimal(300)));
         so.addCandle(createCandle.apply(new BigDecimal(400)));
         so.addCandle(createCandle.apply(new BigDecimal(500)));
-        assertEquals(new BigDecimal("97.6200"), so.getValue());
-        assertEquals(new BigDecimal("73.8100"), so.getEmaValue());
+        assertEquals(new BigDecimal("97.6200"), so.getValue().getValue());
+        assertEquals(new BigDecimal("73.8100"), so.getEmaValue().getValue());
     }
 }

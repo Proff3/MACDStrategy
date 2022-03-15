@@ -6,6 +6,7 @@ import ru.pronin.tradeBot.indicators.utils.ScalableMap;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.ZonedDateTime;
+import java.util.AbstractMap;
 
 public class StochasticOscillator implements Indicator {
 
@@ -15,7 +16,7 @@ public class StochasticOscillator implements Indicator {
 
     private BigDecimal max;
     private BigDecimal min;
-    private BigDecimal value;
+    private AbstractMap.SimpleEntry<ZonedDateTime,BigDecimal> value;
     private final ScalableMap<ZonedDateTime, CustomCandle> candleMap;
     private boolean isOver = false;
     private final ScalableMap<ZonedDateTime, BigDecimal> numerators;
@@ -41,9 +42,10 @@ public class StochasticOscillator implements Indicator {
     public void addCandle(CustomCandle candle) {
         if(max == null || min == null) {
             updateLimits(candle);
-            return;
+            calculate(candle);
+        } else {
+            calculate(candle);
         }
-        calculate(candle);
     }
 
     @Override
@@ -69,8 +71,8 @@ public class StochasticOscillator implements Indicator {
     private void calculate(CustomCandle candle) {
         candleMap.addValue(candle.getTime(), candle);
         updateLimits(candle);
-        value = calculateCurrentValue(candle);
-        CustomCandle candleWithCalculatedValue = CustomCandle.getCandleWithNewCloseValue(candle, value);
+        value = new AbstractMap.SimpleEntry<>(candle.getTime(), calculateCurrentValue(candle));
+        CustomCandle candleWithCalculatedValue = CustomCandle.getCandleWithNewCloseValue(candle, value.getValue());
         SMA.addCandle(candleWithCalculatedValue);
     }
 
@@ -91,11 +93,11 @@ public class StochasticOscillator implements Indicator {
         return MULTIPLIER.multiply(numeratorSmoothValue.divide(denominatorSmoothValue, 4, RoundingMode.HALF_UP));
     }
 
-    public BigDecimal getValue() {
+    public AbstractMap.SimpleEntry<ZonedDateTime,BigDecimal> getValue() {
         return value;
     }
 
-    public BigDecimal getEmaValue() {
+    public AbstractMap.SimpleEntry<ZonedDateTime,BigDecimal> getEmaValue() {
         return SMA.getCurrentValue();
     }
 }
