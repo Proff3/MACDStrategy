@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 
 public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
 
-    private Logger LOGGER = Logger.getLogger(InstrumentsDataDAOTinkoffImpl.class.toString());
+    private final Logger LOGGER = Logger.getLogger(InstrumentsDataDAOTinkoffImpl.class.toString());
     private MarketContext MARKET;
-    private RequestCounter counter = new RequestCounter();
+    private final RequestCounter counter = new RequestCounter();
     List<CustomMarketInstrument> instruments;
 
     public void setMARKET(MarketContext MARKET) {
@@ -49,12 +49,13 @@ public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
     }
 
     @Override
-    public List<CustomCandle> getRequiredNumberOfCandles(String figi, int requiredNumberOfCandles, CustomCandleResolution customCandleResolution) throws Exception {
+    public List<CustomCandle> getRequiredNumberOfCandles(boolean USASession, String figi, int requiredNumberOfCandles, CustomCandleResolution customCandleResolution) throws Exception {
         int maxIntervalInDays = getRequiredIntervalInDays(customCandleResolution);
         int skippedDays = maxIntervalInDays;
         List<CustomCandle> candles = new ArrayList<>();
         while(requiredNumberOfCandles > candles.size()){
             candles.addAll(0, getCandlesForTimeInterval(
+                                        USASession,
                                         OffsetDateTime.now().minusDays(skippedDays),
                                         OffsetDateTime.now().minusDays(skippedDays - maxIntervalInDays),
                                         figi,
@@ -65,12 +66,13 @@ public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
     }
 
     @Override
-    public List<CustomCandle> getCandlesFromDateTime(String figi, OffsetDateTime startTime, CustomCandleResolution customCandleResolution) throws Exception {
+    public List<CustomCandle> getCandlesFromDateTime(boolean USASession, String figi, OffsetDateTime startTime, CustomCandleResolution customCandleResolution) throws Exception {
         int maxIntervalInDays = getRequiredIntervalInDays(customCandleResolution);
         OffsetDateTime currentTime = startTime;
         List<CustomCandle> candles = new ArrayList<>();
         while(currentTime.isBefore(OffsetDateTime.now())){
             candles.addAll(0, getCandlesForTimeInterval(
+                    USASession,
                     currentTime,
                     currentTime.plusDays(maxIntervalInDays),
                     figi,
@@ -81,7 +83,7 @@ public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
         return candles;
     }
 
-    private List<CustomCandle> getCandlesForTimeInterval(OffsetDateTime dateFrom, OffsetDateTime dateTo, String figi, CustomCandleResolution resolution) throws Exception {
+    private List<CustomCandle> getCandlesForTimeInterval(boolean USASession, OffsetDateTime dateFrom, OffsetDateTime dateTo, String figi, CustomCandleResolution resolution) throws Exception {
         CandleResolution candleResolution = CandleResolution.fromValue(resolution.getValue());
         checkCounter();
         return MARKET
@@ -101,6 +103,7 @@ public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
                 })
                 .getCandles()
                 .stream()
+                .filter(c -> !USASession || isUSASession(c))
                 .map(InstrumentsDataDAOTinkoffImpl::tinkoffCandleToCustom)
                 .collect(Collectors.toList());
     }
@@ -168,4 +171,10 @@ public class InstrumentsDataDAOTinkoffImpl implements InstrumentsDataDAO {
         }
     }
 
+    private boolean isUSASession(Candle candle) {
+        OffsetDateTime time = candle.getTime();
+        int hours = time.getHour();
+        int minutes = time.getMinute();
+        return (hours >= 16 && minutes >= 30) && (hours < 22);
+    }
 }

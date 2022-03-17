@@ -1,12 +1,12 @@
 package ru.pronin.tradeBot.indicators;
 
 import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
+import ru.pronin.tradeBot.indicators.utils.Pair;
 import ru.pronin.tradeBot.indicators.utils.ScalableMap;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.ZonedDateTime;
-import java.util.AbstractMap;
 
 public class StochasticOscillator implements Indicator {
 
@@ -16,7 +16,7 @@ public class StochasticOscillator implements Indicator {
 
     private BigDecimal max;
     private BigDecimal min;
-    private AbstractMap.SimpleEntry<ZonedDateTime,BigDecimal> value;
+    private Pair<ZonedDateTime, BigDecimal> value;
     private final ScalableMap<ZonedDateTime, CustomCandle> candleMap;
     private boolean isOver = false;
     private final ScalableMap<ZonedDateTime, BigDecimal> numerators;
@@ -71,7 +71,7 @@ public class StochasticOscillator implements Indicator {
     private void calculate(CustomCandle candle) {
         candleMap.addValue(candle.getTime(), candle);
         updateLimits(candle);
-        value = new AbstractMap.SimpleEntry<>(candle.getTime(), calculateCurrentValue(candle));
+        value = new Pair<>(candle.getTime(), calculateCurrentValue(candle));
         CustomCandle candleWithCalculatedValue = CustomCandle.getCandleWithNewCloseValue(candle, value.getValue());
         SMA.addCandle(candleWithCalculatedValue);
     }
@@ -93,11 +93,11 @@ public class StochasticOscillator implements Indicator {
         return MULTIPLIER.multiply(numeratorSmoothValue.divide(denominatorSmoothValue, 4, RoundingMode.HALF_UP));
     }
 
-    public AbstractMap.SimpleEntry<ZonedDateTime,BigDecimal> getValue() {
+    public Pair<ZonedDateTime, BigDecimal> getValue() {
         return value;
     }
 
-    public AbstractMap.SimpleEntry<ZonedDateTime,BigDecimal> getEmaValue() {
+    public Pair<ZonedDateTime, BigDecimal> getEmaValue() {
         return SMA.getCurrentValue();
     }
 }

@@ -162,6 +162,12 @@ public class CustomCandle {
         this.l = l;
     }
 
+    public boolean isUSASession() {
+        int hours = time.getHour();
+        int minutes = time.getMinute();
+        return (hours >= 16 && minutes >= 30) && (hours <= 23);
+    }
+
     @Override
     public boolean equals(Object o1) {
         if (this == o1) return true;

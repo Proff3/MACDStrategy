@@ -10,15 +10,14 @@ import java.util.function.Function;
 
 public class EventHandlerFactory {
 
-    public static Function<StreamingEvent, Boolean> getTinkoffEventHandler(List<Indicator> strategies){
+    public static Function<StreamingEvent, Boolean> getTinkoffEventHandler(List<Indicator> strategies, boolean isUSASession) {
         return (event) -> {
             if(event.getClass().equals(StreamingEvent.Candle.class)){
                 StreamingEvent.Candle originCandle = (StreamingEvent.Candle) event;
                 CustomCandle candle = TinkoffConvertor.convertStreamingEventCandleToCustom(originCandle);
-                strategies
-                        .stream()
-                        //.filter(s -> s.getFigi().equalsIgnoreCase(candle.getFigi()))
-                        .forEach(s -> s.addCandle(candle));
+                if(candle.isUSASession()) {
+                    strategies.forEach(s -> s.addCandle(candle));
+                }
             }
             if(event.getClass().equals(StreamingEvent.InstrumentInfo.class)){
                 StreamingEvent.InstrumentInfo instrumentInfo = (StreamingEvent.InstrumentInfo) event;

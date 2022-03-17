@@ -1,5 +1,6 @@
 package ru.pronin.tradeBot.strategies.manager;
 
+import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
 import ru.pronin.tradeBot.indicators.StochasticOscillator;
 import ru.pronin.tradeBot.indicators.utils.ScalableMap;
 
@@ -8,14 +9,13 @@ import java.time.ZonedDateTime;
 
 public class StochasticManager implements IndicatorManager<StochasticOscillator> {
 
-    private final IndicatorName indicatorName = IndicatorName.STOCHASTIC_OSCILLATOR;
     private final int ScalableMapDepth = 2;
 
     private final ScalableMap<ZonedDateTime, BigDecimal> values = new ScalableMap<>(ScalableMapDepth);
     private final ScalableMap<ZonedDateTime, BigDecimal> emaValues = new ScalableMap<>(ScalableMapDepth);
 
     @Override
-    public boolean isTimeToBuy(StochasticOscillator indicator) {
+    public boolean isTimeToBuy(StochasticOscillator indicator, CustomCandle candle) {
         return  isEnoughInformation()
                 && values.getValues().get(1).compareTo(values.getValues().get(0)) > 0
                 && emaValues.getValues().get(0).compareTo(values.getValues().get(0)) > 0
@@ -34,7 +34,7 @@ public class StochasticManager implements IndicatorManager<StochasticOscillator>
     }
 
     @Override
-    public boolean isTimeToSell(StochasticOscillator indicator) {
+    public boolean isTimeToSell(StochasticOscillator indicator, CustomCandle candle) {
         return isEnoughInformation()
                 && values.getValues().get(0).compareTo(values.getValues().get(1)) > 0
                 && emaValues.getValues().get(1).compareTo(values.getValues().get(1)) >= 0
@@ -43,6 +43,6 @@ public class StochasticManager implements IndicatorManager<StochasticOscillator>
 
     @Override
     public IndicatorName getName() {
-        return indicatorName;
+        return IndicatorName.STOCHASTIC_OSCILLATOR;
     }
 }

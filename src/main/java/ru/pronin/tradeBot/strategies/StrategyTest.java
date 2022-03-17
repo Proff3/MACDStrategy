@@ -34,7 +34,7 @@ public class StrategyTest implements Runnable {
             List<CustomCandle> middlewareCandles = new ArrayList<>();
             try {
                 middlewareCandles =
-                        broker.getInstrumentsDataDAO().getCandlesFromDateTime(figi, startDate, resolution);
+                        broker.getInstrumentsDataDAO().getCandlesFromDateTime(false, figi, startDate, resolution);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -53,6 +53,10 @@ public class BollingerBands implements Indicator {
         isOver = true;
     }
 
+    public ZonedDateTime getLastZonedDateTime() {
+        return ML.getCurrentValue().getKey();
+    }
+
     public BigDecimal getMLValue() {
         return ML.getCurrentValue().getValue();
     }

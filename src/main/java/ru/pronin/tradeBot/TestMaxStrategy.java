@@ -28,14 +28,14 @@ public class TestMaxStrategy {
                 new SubscriptionDAOTinkoffImpl(),
                 new TradingDAOTinkoffImpl(),
                 new PortfolioDAOTinkoffImpl());
-        List<CustomCandle> candles = broker.getInstrumentsDataDAO().getRequiredNumberOfCandles(figiStocks.get(1), 500, CustomCandleResolution._5MIN);
+        List<CustomCandle> candles = broker.getInstrumentsDataDAO().getRequiredNumberOfCandles(false, figiStocks.get(1), 500, CustomCandleResolution._5MIN);
         candles.forEach(c -> {
             so.addCandle(c);
             bb.addCandle(c);
             stochasticManager.processIndicatorValues(so);
-            if(stochasticManager.isTimeToBuy(so) || stochasticManager.isTimeToSell(so)) {
-                System.out.println("Is time to buy: " + stochasticManager.isTimeToBuy(so));
-                System.out.println("Is time to sell: " + stochasticManager.isTimeToSell(so));
+            if(stochasticManager.isTimeToBuy(so, c) || stochasticManager.isTimeToSell(so, c)) {
+                System.out.println("Is time to buy: " + stochasticManager.isTimeToBuy(so, c));
+                System.out.println("Is time to sell: " + stochasticManager.isTimeToSell(so, c));
                 System.out.println("Time is: " + c.getTime());
             }
         });

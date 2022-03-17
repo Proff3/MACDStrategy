@@ -1,12 +1,12 @@
 package ru.pronin.tradeBot.indicators;
 
 import ru.pronin.tradeBot.brokerAPI.entities.CustomCandle;
+import ru.pronin.tradeBot.indicators.utils.Pair;
 import ru.pronin.tradeBot.indicators.utils.ScalableMap;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.ZonedDateTime;
-import java.util.AbstractMap;
 import java.util.stream.Collectors;
 
 public class SMA implements Indicator {
@@ -14,7 +14,7 @@ public class SMA implements Indicator {
     private final int DEPTH;
     private final ScalableMap<ZonedDateTime, CustomCandle> candleMap;
 
-    private AbstractMap.SimpleEntry<ZonedDateTime,BigDecimal> currentValue;
+    private Pair<ZonedDateTime, BigDecimal> currentValue;
     private boolean isOver;
 
     public SMA(int depth) {
@@ -29,7 +29,7 @@ public class SMA implements Indicator {
                 .stream()
                 .collect(Collectors.averagingDouble(c -> c.getC().doubleValue()));
         BigDecimal value = new BigDecimal(currentValueInDouble).setScale(4, RoundingMode.HALF_UP);
-        currentValue = new AbstractMap.SimpleEntry<>(candle.getTime(), value);
+        currentValue = new Pair<>(candle.getTime(), value);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class SMA implements Indicator {
         isOver = true;
     }
 
-    public AbstractMap.SimpleEntry<ZonedDateTime,BigDecimal> getCurrentValue() {
+    public Pair<ZonedDateTime, BigDecimal> getCurrentValue() {
         return currentValue;
     }
 }
